@@ -28,7 +28,8 @@ class HFClient:
 
     def publish_to_discord(self):
         for _, row in self.hot_follows_df.iterrows():
-            msg_out = f"Hot account: {row['hot_acct']}, counts: {row['counts']}, subscribers: {row['subscribers']} (<{row['url']}>)"
+            msg_str = f"Hot account: {row['hot_acct']}, counts: {row['counts']}, subscribers: {row['subscribers']}"
+            msg_out = f"[{msg_str}]({row['url']})".replace("_", "\_")
             print(msg_out)
             if self.config["main"]["ENABLE_PRODUCTION"]:
                 self.discord_webhook.send(msg_out)
@@ -51,4 +52,3 @@ if __name__ == "__main__":
     print("Starting up client.")
     HF = HFClient(config_path = args.config_file)
     HF.orchestrate()
-
