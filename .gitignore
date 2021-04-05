@@ -1,3 +1,7 @@
+# Create your own config.yaml
+config.yaml
+twitter*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
