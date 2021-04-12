@@ -3,9 +3,9 @@ import tweepy
 from tweepy import OAuthHandler
 import pandas as pd
 import datetime
+import time
 from datetime import datetime
 from datetime import datetime, timedelta
-
 
 class TwitterBot(object): 
     def __init__(self, config):
@@ -17,25 +17,22 @@ class TwitterBot(object):
         try: 
             self.auth = OAuthHandler(consumer_key, consumer_secret) 
             self.auth.set_access_token(access_token, access_token_secret) 
-            self.api = tweepy.API(self.auth) 
+            self.api = tweepy.API(self.auth, wait_on_rate_limit=True) 
             print("Connected")
         except: 
             print("Error: Authentication Failed") 
             
         self.alpha_accounts = config['ALPHA_ACCOUNTS']
         self.get_new_follows()
-            
+
     def get_new_follows(self):
         self.new_follows = {}
         self.all_follows = []
         for account in self.alpha_accounts:
             print(f'Checking {account}')
-            watchlist = []
             # Check most recent follows and add them to list
             for friend in tweepy.Cursor(self.api.friends,screen_name=account).items(10):
-                watchlist.append(friend.screen_name)
                 self.all_follows.append(friend.screen_name)
-            #self.new_follows[account] = watchlist
         self.df = pd.DataFrame(self.all_follows,columns=['hot_acct'])
         self.df = self.df.groupby(['hot_acct']).size().reset_index(name='counts')
         #self.df.sort_values(by='counts', ascending=False)
@@ -50,11 +47,15 @@ class TwitterBot(object):
         
     def get_follower_count(self):
         hot_count =[]
+        descs = []
         for hf in self.df['hot_acct']:
-            count = self.api.get_user(hf).followers_count
+            acc = self.api.get_user(hf)
+            count = acc.followers_count
+            desc = acc.description
             hot_count.append(count)
+            descs.append(desc)
         self.df['subscribers'] = hot_count
-        
+        self.df['description'] = descs
         #add timestamp
         self.df['timestamp']= datetime.today().strftime('%Y-%m-%d')
         self.df.to_csv('twitterReport_'+ datetime.today().strftime('%Y-%m-%d')+'.csv',index=False)
