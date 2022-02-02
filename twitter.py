@@ -35,7 +35,7 @@ class TwitterBot(object):
                 for friend in tweepy.Cursor(self.api.friends,screen_name=account).items(10):
                     self.all_follows.append(friend.screen_name)
             except: 
-                print("Error: Authentication Failed") 
+                print("Error: Account Error") 
         self.df = pd.DataFrame(self.all_follows,columns=['hot_acct'])
         self.df = self.df.groupby(['hot_acct']).size().reset_index(name='counts')
         #self.df.sort_values(by='counts', ascending=False)
